@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{{ hotel.hotelchain.name}} | {{hotel.name}} | Reviews</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='css/bootswatch.css')}}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/c3.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/datatables.min.css') }}" rel="stylesheet">
+
+
+
+  <!-- favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static',filename='images/favicon.png') }}"/>
+  </head>
+<style type="text/css">
+  .navbar-nav > li{
+  font-size: 14px;
+}
+</style>
+  <body style="padding-top: 70px;">
+    {% include 'navbar.html' %}
+    
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9" >
+          <h3></h3>
+          
+          <div class="panel panel-primary">
+            <div class="panel-heading" style="text-align: center;">
+              <h3 class="panel-title">Review of {{hotel.name}}</h3>
+            </div>
+            <div class="panel-body">
+              <div id="piechart" class="c3chart"></div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="col-md-3">
+          <h3></h3>
+          <div class="list-group">
+          <h4>Select Hotel</h4>
+            {% for h in hotels %}
+            <a href="/{{h.property_id}}" class="list-group-item {{ 'active' if h.property_id==hotel.property_id }}">
+              {{h.name}}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
+
+        <div class="col-md-12" >
+          <h3></h3>
+          
+          <div class="panel panel-primary">
+            <div class="panel-heading" style="text-align: center;">
+              <h3 class="panel-title">Reviews</h3>
+            </div>
+            <div class="panel-body">
+              <table id="reviews" class="table table-striped table-hover " style="text-align: center;">
+                <thead>
+                  <tr>
+                    <th class="col-md-6" style="text-align: center;">Review</th>
+                    <th class="col-md-3" style="text-align: center;">Sentiment</th>
+                    <th class="col-md-1" style="text-align: center;">Rating</th>
+                    <th class="col-md-2" style="text-align: center;">Link</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in reviews %}
+                  <tr>
+                    <td style="text-align: justify;">{{r.review}}</td>
+                    <td><h5 style="color:{{ 'green' if r.sentiment=='Positive' else('red' if r.sentiment=='Negative' else 'black') }};">{{r.sentiment}}</h5></td>
+                    <td>{{r.rating}}</td>
+                    <td><a href="{{ r.review_link }}"" target='_blank'><button class="btn btn-success btn-block" id="btn-view">View</button></a> </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+
+    <script src="{{ url_for('static', filename='js/jquery.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/datatables.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/c3.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/d3.js')}}"></script>
+    
+
+
+      <script>
+
+
+        $(document).ready(function() {
+            $('#reviews').DataTable();
+        } );
+
+        var c3chart_pie_id = '#piechart';
+
+        if ( $(c3chart_pie_id).length ) {
+
+            var c3chart_pie = c3.generate({
+                bindto: c3chart_pie_id,
+                data: {
+                    columns: [
+                        ['Positive', {{ positive }} ],
+                        ['Negative', {{ negative }} ],
+                        ['Neutral',  {{ neutral }} ]
+                    ],
+                    type : 'pie',
+                    onclick: function (d, i) { console.log("onclick", d, i); },
+                    onmouseover: function (d, i) { console.log("onmouseover", d, i); },
+                    onmouseout: function (d, i) { console.log("onmouseout", d, i); }
+                },
+                color: {
+                    pattern: ['#1f77b4', '#ff7f0e', '#2ca02c']
+                }
+            });
+
+            $window.on('debouncedresize', function () {
+                c3chart_pie.resize();
+            });
+
+        }
+
+    </script>
+
+
+   
+
+
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
+  </body>
+</html>
