@@ -17,18 +17,18 @@ db.init_app(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    hotelchains = HotelChains.query.all()
+    hotelchains = HotelChains.query.all()           #querying everything
     hotels = Hotels.query.all()
     reviews = Reviews.query.all()
-    positive = {}
+    positive = {}                                   #declaring dictionaries
     negative = {}
     neutral = {}
     for hotel in hotels:
-        positive[hotel.property_id]=0
+        positive[hotel.property_id]=0               #initialising dictionaries
         negative[hotel.property_id]=0
         neutral[hotel.property_id]=0
     for review in reviews:        
-        if review.sentiment == 'Positive':
+        if review.sentiment == 'Positive':          #counting sentments used for loop to reduce db request
             positive[review.hotel.property_id]+=1
         if review.sentiment == 'Negative':
             negative[review.hotel.property_id]+=1
@@ -42,20 +42,20 @@ def index():
 
 @app.route('/<hotelid>')
 def hotelreview(hotelid):
-    hotels = Hotels.query.all()
+    hotels = Hotels.query.all()             #Get all the hotels from db for menu
     for h in hotels:
-        if h.property_id == hotelid:
+        if h.property_id == hotelid:        #check if any hotel matches the id provided
             hotel = h
             reviews = Reviews.query.filter(Reviews.hotel.property_id==hotelid).all()
             positive = {}
             negative = {}
             neutral = {}
 
-            positive=0
+            positive=0                      #initialising variables to zero
             negative=0
             neutral=0
             for review in reviews:        
-                if review.sentiment == 'Positive':
+                if review.sentiment == 'Positive':      #counting sentments used for loop to reduce db request
                     positive+=1
                 if review.sentiment == 'Negative':
                     negative+=1
@@ -65,15 +65,11 @@ def hotelreview(hotelid):
             app.logger.info(positive)
             # app.logger.info(reviews[0].hotel.name + ", " + reviews[0].review + ", " + reviews[0].sentiment + ", " + reviews[0].rating)
             return render_template("individual.html",page="individual", hotels=hotels, reviews=reviews, hotel=hotel, positive=positive, negative=negative, neutral=neutral )
-    if not hotel:
-        return render_template("404.html",page="404")
+    try:
+        hotel
+    except NameError:
+        return render_template("404.html",page="Error")
 
 
-
-
-@app.route('/test', methods=['GET'])
-def testpost():
-    app.logger.info(request)
-    return "ok"
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5050)
